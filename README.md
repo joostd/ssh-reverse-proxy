@@ -1,20 +1,6 @@
-# web development TLS tunnel proxy
+# HTTPS-to-HTTP Reverse proxy through an SSH tunnel
 
-## SSH Tunneling
-
-	ssh -R 8080:localhost:8080 -l ubuntu proxy.example.org
-
-Alternatively, edit your `~/.ssh/config` file and add:
-
-	Host proxy
-	Hostname proxy.example.org
-	User ubuntu
-	IdentityFile "~/.ssh/id_rsa.pem"
-	RemoteForward 8080 localhost:8080
-
-and simply use
-
-	ssh proxy
+This nginx-based reverse proxy terminates HTTPS and proxies to a local server through an SSH tunnel. This is useful when developing a web application on a local system (on a loopback interface or on a local VM), and you need to test your application using HTTPS from a different client.
 
 # Install manually
 
@@ -52,3 +38,49 @@ Apart from a standard TLS configuration, nginx is configured as a reverse proxy 
 The `X-Forwarded-Proto` header can be used to signal the use of https to the proxied server. Support for this header varies. When running an apache on your local server, you can propagate this information to your application using:
 
 	SetEnvIf X-Forwarded-Proto https HTTPS=on
+
+# Install automatically
+
+You can install your proxy using ansible.
+
+	ansible-playbook playbook.yml
+
+or simply
+
+	./playbook.yml
+
+You may need to edit your `ansible.cfg` file when using a different inventory file, or specify one explicitely:
+
+	ansible-playbook playbook.yml -i hosts
+
+## replacing certificates
+
+The ansible `playbook` will generate self-signed certificates. These will not be accepted by browsers without warnings. "Real" certificates can be installed by placing `nginx.crt` and `nginx.key` in the `files` directory.
+
+
+# SSH Tunneling
+
+To create a tunnel from your reverse proxy's loopback interface to your local server, use your OpenSSH client:
+
+	ssh -R 8080:localhost:8080 -l ubuntu proxy.example.org
+
+Alternatively, edit your `~/.ssh/config` file and add:
+
+	Host proxy
+	Hostname proxy.example.org
+	User ubuntu
+	IdentityFile "~/.ssh/id_rsa.pem"
+	RemoteForward 8080 localhost:8080
+
+and simply use
+
+	ssh proxy
+
+## Proxying a Vagrant VM
+
+If the server you want to proxy is running on a local VM, you need to forward port 8080 on your local system to your VM.
+
+In your VM's `Vagrantfile`, you can forward port 8080 to a port on your guest using
+
+	config.vm.network "forwarded_port", guest: 80, host: 8080
+
