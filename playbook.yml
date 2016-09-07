@@ -1,0 +1,29 @@
+#! /usr/bin/env ansible-playbook
+---
+- name: proxy
+  hosts: all
+  become: true
+
+  tasks:
+    - name: install nginx
+      apt: name={{ item }} update_cache=yes state=latest
+      with_items:
+        - nginx
+
+    - name: create /etc/nginx/ssl
+      file: path=/etc/nginx/ssl state=directory mode=0755
+
+    - name: Copy server certificate key
+      copy: src=files/nginx.key dest=/etc/nginx/ssl/nginx.key owner=root mode=0400
+
+    - name: Copy server certificate
+      copy: src=files/nginx.crt dest=/etc/nginx/ssl/nginx.crt
+
+    - name: create virtual host file
+      template: src=templates/default dest=/etc/nginx/sites-available/default
+      notify:
+      - restart nginx
+
+  handlers:
+    - name: restart nginx
+      service: name=nginx state=restarted
