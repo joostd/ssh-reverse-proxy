@@ -84,3 +84,11 @@ In your VM's `Vagrantfile`, you can forward port 8080 to a port on your guest us
 
 	config.vm.network "forwarded_port", guest: 80, host: 8080
 
+## Alternatives
+
+I recently discovered that for limited use, there are free services available, such as:
+- [ngrok](https://ngrok.com)
+- [serveo](https://serveo.net)
+- and [several others](https://www.chenhuijing.com/blog/tunnelling-services-for-exposing-localhost-to-the-web/#🏀)
+
+Also, some suggestions for improvements are described [here](https://dev.to/k4ml/poor-man-ngrok-with-tcp-proxy-and-ssh-reverse-tunnel-1fm).
